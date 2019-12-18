@@ -506,7 +506,10 @@ MM_Scavenger::calculateHistoricAverageWorkingThreads(MM_EnvironmentStandard *env
 
 	float currThreads = (float)threadCount - (float)normalWait;
 	_historicWorkingThreadsTimeWeight += totalTime;
-	float timeRatio = (float)totalTime / _historicWorkingThreadsTimeWeight;
+	float timeRatio = (float)totalTime;
+	if (0 < _historicWorkingThreadsTimeWeight) {
+		timeRatio /= _historicWorkingThreadsTimeWeight;
+	}
 	_historicAverageWorkingThreads = MM_Math::weightedAverage(_historicAverageWorkingThreads, currThreads, 1 - timeRatio);
 	Trc_MM_Scavenger_workingThreadsHistory(env->getLanguageVMThread(), threadCount, _historicAverageWorkingThreads, gcCount, normalWait, totalTime);
 }
@@ -2261,7 +2264,7 @@ MM_Scavenger::workThreadGarbageCollect(MM_EnvironmentStandard *env)
 	abandonSurvivorTLHRemainder(env);
 	abandonTenureTLHRemainder(env, true);
 
-	updateCopyScanCounts(env, 0, 0, true);
+	// updateCopyScanCounts(env, 0, 0, true);
 
 	/* If -Xgc:fvtest=forceScavengerBackout has been specified, set backout flag every 3rd scavenge */
 	if(_extensions->fvtest_forceScavengerBackout) {
